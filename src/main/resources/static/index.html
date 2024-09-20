@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket 示例</title>
+  <script src="js/axios.js"></script>
+  <script src="js/vue.js"></script>
+  <style scoped>
+    .email-app {
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    .stats {
+      margin-bottom: 20px;
+    }
+
+    .email-list {
+      border: 1px solid #000;
+      border-radius: 10px;
+      padding: 10px;
+      width: 800px;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px; /* 调整字体大小 */
+    }
+
+    th, td {
+      border-bottom: 1px solid #000;
+      padding: 8px; /* 调整单元格内边距 */
+      text-align: left;
+      line-height: 1.2; /* 调整行高 */
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    footer {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="email-app">
+    <h3>邮件</h3>
+    <div class="stats">
+      <p>成功发送邮件数: {{emails.length}}</p>
+    </div>
+    <div class="email-list">
+      <table>
+        <thead>
+        <tr>
+          <th>发件人</th>
+          <th>收件人</th>
+          <th>标题</th>
+          <th>发送时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(email, index) in emails" :key="index">
+          <td>{{ email.fromemail }}</td>
+          <td>{{ email.to }}</td>
+          <td>{{ email.subject }}</td>
+          <td>{{ email.sendTime }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+  var app = new Vue({
+    el: '#app',
+    data: {
+      emails: [],
+      ws: null,
+    },
+    mounted() {
+      this.fetchEmails();
+    },
+    methods: {
+      connect() {
+        ws = new WebSocket("ws://localhost:8082/ws");
+        ws.onopen = function() {
+          console.log("连接成功");
+          ws.send("Hello Server");
+        };
+        ws.onmessage = function(event) {
+          console.log("从后端获取的结果: ", event.data);
+          // 将 JSON 字符串转换为 JavaScript 对象
+          const dataObject = JSON.parse(event.data);
+          app.$data.emails = []; // 清空当前数据
+          dataObject.reverse().forEach(email => {
+            app.$data.emails.push(email);
+          });
+          //
+          // if (event.data === "") {
+          //   ws.send("无通知");
+          // } else {
+          //   console.log("收到消息: " + event.data);
+          //
+          //   // 使用axios调用后端接口
+          //   axios.get(`/find`, {
+          //     params: {
+          //       key: event.data // 将 WebSocket 消息作为 key 传递
+          //     }
+          //   })
+          //           .then(response => {
+          //             console.log("从后端获取的结果: ", response.data);
+          //             app.$data.emails = []; // 清空当前数据
+          //             response.data.reverse().forEach(email => {
+          //               app.$data.emails.push(email);
+          //             });
+          //           })
+          //           .catch(error => {
+          //             console.error("请求失败: ", error);
+          //           });
+          // }
+        };
+        ws.onclose = function() {
+          console.log("连接关闭，尝试重新连接...");
+          setTimeout(connect, 5000); // 5秒后尝试重新连接
+        };
+      },
+    },
+    // 挂载后，调用 connect 方法
+    mounted() {
+      this.connect();
+    }
+  });
+</script>
+</body>
+</html>

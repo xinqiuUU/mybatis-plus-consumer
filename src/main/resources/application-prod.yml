@@ -1,0 +1,61 @@
+# spring boot 配置文件
+# 端口
+server:
+  port: 8082
+
+spring:
+  # 多线程配置
+  task:
+    execution:
+      pool:
+        core-size: 5       # 核心线程数
+        max-size: 16       # 最大线程数
+        queue-capacity: 25 # 队列容量
+        keep-alive: 60s    # 线程空闲时间
+
+  #  redis 缓存
+#  cache:
+#    type: redis
+#    cacheName: message
+#  data:
+#    redis:
+#      host: myredis
+#      #host: localhost
+#      #host: 192.168.208.1
+#      port: 6379
+#      #port: 6380
+#      database: 0
+#      password: a
+
+  #  邮箱配置
+  mail:
+    host: smtp.qq.com
+    username: 2921310632
+    password: cxkekqovfdxzddef
+    default-encoding: UTF-8
+    default-charset: UTF-8
+    default-reply-to: 2921310632@qq.com #默认的回复邮箱地址
+    properties:
+      mail:
+        smtp:
+          from: 2921310632@qq.com
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+  #jms  activemq 消息中间件
+  activemq:
+    broker-url: tcp://activemq:61616
+    #broker-url: tcp://localhost:61616
+    #broker-url: tcp://172.18.0.5:61619
+    queueName: bankMessages
+    user: admin
+    password: admin
+
+    # 热部署
+    devtools:
+      restart:
+        enabled: false  #是否之车自动重启(热部署
+        additional-paths: src/main/java #设置监听源码变更的目录 -> 这个目录中的文件变更，则重启
+        exclude: static/** #排除监听的目录，不重启
